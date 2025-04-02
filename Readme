@@ -1,0 +1,86 @@
+# 🛡️ Projet de Cybersécurité
+
+## 📌 Description
+
+Ce projet propose une suite d'outils de cybersécurité permettant d'analyser des adresses IP, des sites web et des e-mails. Il inclut des fonctionnalités avancées telles que l'analyse de pare-feu, la détection de VPN/proxy, la vérification des certificats SSL et bien plus encore.
+
+## ⚙️ Prérequis
+
+Avant d'exécuter le script, assurez-vous d'avoir :
+
+- **Python** installé : [Télécharger ici](https://www.python.org/downloads/)
+- **pip** installé
+
+## 🚀 Installation
+
+1. Clonez ce répertoire ou téléchargez les fichiers :
+   ```sh
+   git clone https://github.com/utilisateur/projet-cybersecurite.git
+   cd projet-cybersecurite
+   ```
+2. Ouvrez un terminal (ou CMD sous Windows) dans le dossier du projet.
+3. Exécutez le script d'installation :
+   ```sh
+   run.bat  # Windows
+   ./run.sh  # Linux/macOS
+   ```
+
+Le script installera automatiquement les dépendances et lancera `main.py`.
+
+## 🔧 Fonctionnalités
+
+### 🌐 Outils Réseau
+
+- `1` : Ping IP
+- `2` : Informations IP
+- `3` : Traceroute
+- `4` : Reverse DNS Lookup
+- `5` : Scan de ports
+- `6` : Whois Lookup
+- `7` : Vérification liste noire
+- `8` : Enregistrements DNS
+- `9` : Informations ASN
+
+### 🔎 Outils OSINT
+
+- `11` : Recherche sous-domaines
+- `12` : Extraction de métadonnées EXIF
+- `21` : Recherche d'utilisateurs
+- `22` : Conseils sur la vie privée
+
+### 🛡️ Outils de Sécurité
+
+- `10` : Simulation DOS
+- `13` : Vérification de pare-feu
+- `14` : Détection VPN/Proxy
+- `18` : Analyse VirusTotal (IP)
+- `19` : Analyse VirusTotal (Fichier)
+- `24` : Test de Force Brute
+- `25` : Test SSL/TLS
+- `27` : Cracking de mots de passe
+
+### 💡 Outils Divers
+
+- `15` : Conversion IP binaire/hexadécimal
+- `16` : Calcul de sous-réseaux
+- `17` : Récupération des en-têtes HTTP
+- `20` : Identification de l'adresse IP publique
+- `23` : Informations sur le réseau local
+- `26` : Conversion Base64
+- `28` : Détection de vulnérabilités
+
+## ⚠️ Avertissements
+
+- L'exécution de certains tests peut être réglementée ou illégale selon votre juridiction.
+- Utilisez ces outils uniquement sur des systèmes dont vous avez l'autorisation d'analyse.
+- L'auteur ne saurait être tenu responsable d'une utilisation abusive.
+
+## 👥 Auteurs
+
+- **.Raizzid / Imanol**
+
+## 📜 Licence
+
+Ce projet est sous licence **MIT**. Voir le fichier `LICENSE` pour plus d'informations.
+
+

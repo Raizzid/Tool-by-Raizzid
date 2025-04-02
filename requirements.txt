@@ -1,0 +1,15 @@
+pystyle
+requests
+beautifulsoup4
+urllib3
+phonenumbers
+dnspython
+python-whois
+python-dotenv
+pillow
+paramiko
+matplotlib
+json
+hashlib
+re
+dnspython
