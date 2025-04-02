@@ -395,6 +395,9 @@ def run_main():
                     if retry == 'o':
                         continue  # Réessayer l'analyse si l'utilisateur souhaite
                 else:
+                    # Filtrer les faux positifs
+                    results = filter_false_positives(results, url)
+
                     # Afficher un récapitulatif rapide
                     total_vulnerabilities = len(results["vulnerabilities"])
                     print(f"⚠️  Vulnérabilités détectées : {total_vulnerabilities}")
@@ -480,6 +483,7 @@ def run_main():
                             plt.show()
                         else:
                             print("❌ Aucun graphique disponible - aucune vulnérabilité détectée.")
+
             elif choice == '29':
                 phone_lookup()
             elif choice == '30':

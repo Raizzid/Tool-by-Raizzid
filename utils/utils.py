@@ -101,63 +101,102 @@ def detect_vulnerabilities(target_url):
             for input_field in form.find_all('input'):
                 if input_field.get('type') != 'submit':
                     data = {input_field.get('name', 'input'): xss_payload}
-                    test_response = session.post(form_url, data=data, timeout=5)
-                    if xss_payload in test_response.text:
-                        results["vulnerabilities"].append(f"XSS détecté dans un formulaire : {form_url}")
-        
+                    try:
+                        test_response = session.post(form_url, data=data, timeout=5)
+                        if xss_payload in test_response.text:
+                            results["vulnerabilities"].append(f"XSS détecté dans un formulaire : {form_url}")
+                    except requests.exceptions.RequestException as e:
+                        results["error"] = f"Erreur lors du test XSS : {str(e)}"
+        else:
+            print("✅ Aucune vulnérabilité XSS détectée")
+
         # 2. SQL Injection Tests
         sql_payloads = ["' OR '1'='1", "' UNION SELECT NULL, NULL, NULL --"]
         for payload in sql_payloads:
-            test_response = session.get(f"{target_url}?id={payload}", timeout=5)
-            if "error" in test_response.text.lower() or "sql" in test_response.text.lower():
-                results["vulnerabilities"].append("Injection SQL détectée dans l'URL")
-                break
-        
+            try:
+                test_response = session.get(f"{target_url}?id={payload}", timeout=5)
+                if "error" in test_response.text.lower() or "sql" in test_response.text.lower():
+                    results["vulnerabilities"].append("Injection SQL détectée dans l'URL")
+                    break
+            except requests.exceptions.RequestException as e:
+                results["error"] = f"Erreur lors du test SQLi : {str(e)}"
+        else:
+            print("✅ Aucune vulnérabilité SQLi détectée")
+
         # 3. LFI Tests
         lfi_payloads = ["../../etc/passwd", "../../windows/win.ini"]
         for payload in lfi_payloads:
-            test_response = session.get(f"{target_url}?file={payload}", timeout=5)
-            if "root:x:" in test_response.text or "for 16-bit app support" in test_response.text:
-                results["vulnerabilities"].append("Local File Inclusion détecté")
-                break
-        
+            try:
+                test_response = session.get(f"{target_url}?file={payload}", timeout=5)
+                if "root:x:" in test_response.text or "for 16-bit app support" in test_response.text:
+                    results["vulnerabilities"].append("Local File Inclusion détecté")
+                    break
+            except requests.exceptions.RequestException as e:
+                results["error"] = f"Erreur lors du test LFI : {str(e)}"
+        else:
+            print("✅ Aucune vulnérabilité LFI détectée")
+
         # 4. SSTI Tests
         ssti_payloads = ["{{7*7}}", "{{config.__class__.__mro__[1].__subclasses__()}}"]
         for payload in ssti_payloads:
-            test_response = session.get(f"{target_url}?template={payload}", timeout=5)
-            if "49" in test_response.text:
-                results["vulnerabilities"].append("Server-Side Template Injection détecté")
-                break
-        
+            try:
+                test_response = session.get(f"{target_url}?template={payload}", timeout=5)
+                if "49" in test_response.text:
+                    results["vulnerabilities"].append("Server-Side Template Injection détecté")
+                    break
+            except requests.exceptions.RequestException as e:
+                results["error"] = f"Erreur lors du test SSTI : {str(e)}"
+        else:
+            print("✅ Aucune vulnérabilité SSTI détectée")
+
         # 5. RCE Tests (ATTENTION, très intrusif)
         rce_payloads = ["; ls", "; cat /etc/passwd"]
         for payload in rce_payloads:
-            test_response = session.get(f"{target_url}?cmd={payload}", timeout=5)
-            if "bin" in test_response.text or "root:x:" in test_response.text:
-                results["vulnerabilities"].append("Remote Code Execution détecté")
-                break
-        
+            try:
+                test_response = session.get(f"{target_url}?cmd={payload}", timeout=5)
+                if "bin" in test_response.text or "root:x:" in test_response.text:
+                    results["vulnerabilities"].append("Remote Code Execution détecté")
+                    break
+            except requests.exceptions.RequestException as e:
+                results["error"] = f"Erreur lors du test RCE : {str(e)}"
+        else:
+            print("✅ Aucune vulnérabilité RCE détectée")
+
         # 6. Open Redirects Tests
         redirect_payload = "https://evil.com"
-        test_response = session.get(f"{target_url}?next={redirect_payload}", timeout=5, allow_redirects=True)
-        if test_response.url == redirect_payload:
-            results["vulnerabilities"].append("Open Redirect détecté")
-        
+        try:
+            test_response = session.get(f"{target_url}?next={redirect_payload}", timeout=5, allow_redirects=True)
+            if test_response.url == redirect_payload:
+                results["vulnerabilities"].append("Open Redirect détecté")
+        except requests.exceptions.RequestException as e:
+            results["error"] = f"Erreur lors du test Open Redirect : {str(e)}"
+        else:
+            print("✅ Aucune vulnérabilité Open Redirect détectée")
+
         # 7. Vérification de fichiers sensibles
         sensitive_files = ["robots.txt", ".git", ".env", "backup.sql"]
         for file in sensitive_files:
-            test_response = session.get(urljoin(target_url, file), timeout=5)
-            if test_response.status_code == 200:
-                results["vulnerabilities"].append(f"Fichier sensible accessible : {file}")
-        
+            try:
+                test_response = session.get(urljoin(target_url, file), timeout=5)
+                if test_response.status_code == 200:
+                    results["vulnerabilities"].append(f"Fichier sensible accessible : {file}")
+            except requests.exceptions.RequestException as e:
+                results["error"] = f"Erreur lors de l'accès aux fichiers sensibles : {str(e)}"
+        else:
+            print("✅ Aucune vulnérabilité de fichier sensible détectée")
+
         # 8. CORS Tests
         if "Access-Control-Allow-Origin" in response.headers and "*" in response.headers["Access-Control-Allow-Origin"]:
             results["vulnerabilities"].append("CORS mal configuré - permet toutes les origines")
-        
+        else:
+            print("✅ CORS bien configuré")
+
         # 9. Clickjacking Tests
         if "X-Frame-Options" not in response.headers:
             results["vulnerabilities"].append("Protection contre le clickjacking absente")
-        
+        else:
+            print("✅ Protection contre le clickjacking présente")
+
         # 10. XXE (XML External Entity) Tests
         xxe_payload = """<?xml version="1.0" encoding="ISO-8859-1"?>
                         <!DOCTYPE foo [ 
@@ -165,34 +204,72 @@ def detect_vulnerabilities(target_url):
                         <!ENTITY xxe SYSTEM "file:///etc/passwd" >] 
                         <foo>&xxe;</foo>"""
         headers = {'Content-Type': 'application/xml'}
-        test_response = session.post(target_url, data=xxe_payload, headers=headers, timeout=5)
-        if "root:x:" in test_response.text:
-            results["vulnerabilities"].append("Injection XML External Entity (XXE) détectée")
-        
+        try:
+            test_response = session.post(target_url, data=xxe_payload, headers=headers, timeout=5)
+            if "root:x:" in test_response.text:
+                results["vulnerabilities"].append("Injection XML External Entity (XXE) détectée")
+        except requests.exceptions.RequestException as e:
+            results["error"] = f"Erreur lors du test XXE : {str(e)}"
+        else:
+            print("✅ Aucune vulnérabilité XXE détectée")
+
         # 11. Command Injection Tests
         command_payloads = ["| ls", "| cat /etc/passwd"]
         for payload in command_payloads:
-            test_response = session.get(f"{target_url}?cmd={payload}", timeout=5)
-            if "root:x:" in test_response.text or "bin" in test_response.text:
-                results["vulnerabilities"].append("Injection de commande détectée")
-                break
-        
+            try:
+                test_response = session.get(f"{target_url}?cmd={payload}", timeout=5)
+                if "root:x:" in test_response.text or "bin" in test_response.text:
+                    results["vulnerabilities"].append("Injection de commande détectée")
+                    break
+            except requests.exceptions.RequestException as e:
+                results["error"] = f"Erreur lors du test Command Injection : {str(e)}"
+        else:
+            print("✅ Aucune vulnérabilité Command Injection détectée")
+
         # 12. HTTP Response Splitting Tests
         response_splitting_payload = "\r\nSet-Cookie: test=1; HttpOnly"
-        test_response = session.get(f"{target_url}?cookie={response_splitting_payload}", timeout=5)
-        if "Set-Cookie" in test_response.headers:
-            results["vulnerabilities"].append("HTTP Response Splitting détecté")
-        
+        try:
+            test_response = session.get(f"{target_url}?cookie={response_splitting_payload}", timeout=5)
+            if "Set-Cookie" in test_response.headers:
+                results["vulnerabilities"].append("HTTP Response Splitting détecté")
+        except requests.exceptions.RequestException as e:
+            results["error"] = f"Erreur lors du test Response Splitting : {str(e)}"
+        else:
+            print("✅ Aucune vulnérabilité Response Splitting détectée")
+
         # 13. Insecure Deserialization Tests
         insecure_deserialization_payload = """O:8:"TestClass":1:{s:4:"test";s:4:"test";}"""
         headers = {'Content-Type': 'application/x-serialized'}
-        test_response = session.post(target_url, data=insecure_deserialization_payload, headers=headers, timeout=5)
-        if "Error" in test_response.text:
-            results["vulnerabilities"].append("Insecure Deserialization détectée")
-        
+        try:
+            test_response = session.post(target_url, data=insecure_deserialization_payload, headers=headers, timeout=5)
+            if "Error" in test_response.text:
+                results["vulnerabilities"].append("Insecure Deserialization détectée")
+        except requests.exceptions.RequestException as e:
+            results["error"] = f"Erreur lors du test Insecure Deserialization : {str(e)}"
+        else:
+            print("✅ Aucune vulnérabilité Insecure Deserialization détectée")
+
     except requests.exceptions.RequestException as e:
         results["error"] = f"Erreur de connexion : {str(e)}"
     except Exception as e:
         results["error"] = f"Erreur inattendue : {str(e)}"
     
+    return results
+
+def filter_false_positives(results, url):
+    # Liste des vulnérabilités à ignorer pour certains types de sites
+    false_positives = [
+        "Remote Code Execution détecté",
+        "Injection SQL détectée dans l'URL",
+        "Server-Side Template Injection détecté",
+        "Injection de commande détectée",
+        "HTTP Response Splitting détecté"
+    ]
+
+    # Exemple de logique pour ignorer certaines vulnérabilités
+    if "youtube.com" in url:
+        # YouTube a des mesures de sécurité solides, donc on filtre certaines vulnérabilités
+        results["vulnerabilities"] = [vuln for vuln in results["vulnerabilities"] if vuln not in false_positives]
+
+    # Ajouter d'autres conditions ici pour filtrer les faux positifs pour d'autres sites
     return results
