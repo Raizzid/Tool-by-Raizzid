@@ -191,7 +191,7 @@ def run_main():
             # Affichage du menu des catégories verticalement
             afficher_categories()
 
-            choice = input("\n---> ").strip().lower()
+            choice = input("\nRoot@_/ ").strip().lower()
 
             if choice == '1':
                 ip_address = input("Entrez l'adresse IP pour Ping : ")
